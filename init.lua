@@ -57,7 +57,6 @@ minetest.register_node("sieve:hand_sieve", {
             },
         },
     on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-        minetest.chat_send_all(itemstack:get_name())
         if itemstack:get_name() == 'default:sand' then
             itemstack:take_item()
             local chance = math.random(40)
