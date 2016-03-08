@@ -31,6 +31,7 @@ minetest.log("action","Sieve: Mesh Loaded")
 --Hand Sieve
 minetest.register_node("sieve:hand_sieve", {
     description = "Hand Sieve",
+    paramtype = "light",
     tiles = {
     	"sieve_hand_sieve_top.png",
     	"sieve_hand_sieve_bottom.png",
@@ -39,15 +40,22 @@ minetest.register_node("sieve:hand_sieve", {
     	"sieve_hand_sieve_side.png",
     	"sieve_hand_sieve_side.png"
     },
-    is_ground_content = true,
     groups = {oddly_breakable_by_hand=1},
     drawtype = "nodebox",
     node_box = {
         type = "fixed",
         fixed = {
-            {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}
-                }
-                },
+                {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5}, --top
+                {0.5,0.1875,0.5,-0.5,0.5,0.4375},--top
+                {-0.5,0.1875,0.5,-0.4375,0.5,-0.5}, --top
+                {0.5,0.1875,-0.5,-0.5,0.5,-0.4375}, --top
+                {0.5,0.1875,0.5,0.4375,0.5,-0.5}, --top
+                {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375}, --leg
+                {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375}, --leg
+                {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375}, --leg
+                {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375}, --leg
+            },
+        },
     on_rightclick = function(pos, node, player, itemstack, pointed_thing)
         minetest.chat_send_all(itemstack:get_name())
         if itemstack:get_name() == 'default:sand' then
@@ -180,16 +188,9 @@ minetest.register_craft({
 })
 minetest.log("action","Sieve: Hand Sieve Loaded")
 ----[[Auto Top
-minetest.register_node("sieve:auto_sieve_top", {
+minetest.register_craftitem("sieve:auto_sieve_top", {
     description = "Auto Sieve Top",
-    tiles = {
-    	"sieve_auto_sieve_top_top.png",
-    	"sieve_auto_sieve_top_bottom.png",
-    	"sieve_auto_sieve_top_side.png",
-    	"sieve_auto_sieve_top_side.png",
-    	"sieve_auto_sieve_top_side.png",
-    	"sieve_auto_sieve_top_side.png"
-    },
+    inventory_image = "sieve_auto_top.png",
     is_ground_content = true,
     groups = {oddly_breakable_by_hand=1},
     drawtype = "nodebox",
@@ -211,16 +212,9 @@ minetest.register_craft({
 minetest.log("action","Sieve: Auto Sieve Top Loaded")
 --]]
 ----[[Auto Legs
-minetest.register_node("sieve:auto_sieve_legs", {
+minetest.register_craftitem("sieve:auto_sieve_legs", {
     description = "Auto Sieve Legs",
-    tiles = {
-    	"sieve_auto_sieve_legs_top.png",
-    	"sieve_auto_sieve_legs_bottom.png",
-    	"sieve_auto_sieve_legs_side.png",
-    	"sieve_auto_sieve_legs_side.png",
-    	"sieve_auto_sieve_legs_side.png",
-    	"sieve_auto_sieve_legs_side.png"
-    },
+    inventory_image = "sieve_auto_legs.png",
     is_ground_content = true,
     groups = {oddly_breakable_by_hand=1},
     drawtype = "nodebox",
@@ -244,6 +238,7 @@ minetest.log("action","Sieve: Auto Sieve Legs Loaded")
 ----[[Auto Sieve
 minetest.register_node("sieve:auto_sieve", {
     description = "Auto Sieve",
+    paramtype = "light",
     tiles = {
         "sieve_auto_sieve_top.png",
         "sieve_auto_sieve_bottom.png",
