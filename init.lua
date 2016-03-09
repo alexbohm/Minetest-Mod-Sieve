@@ -28,6 +28,34 @@ minetest.register_craft({
     }
 })
 minetest.log("action","Sieve: Mesh Loaded")
+--Shaker Motor
+minetest.register_craftitem("sieve:shaker_motor", {
+    description = "Shaker Motor",
+    inventory_image = "sieve_shaker_motor.png",
+    })
+minetest.register_craft({
+    output = "sieve:shaker_motor 2",
+    recipe = {
+        {"", "",""},
+        {"default:cobble", "default:steel_ingot","default:cobble"},
+        {"default:cobble", "default:copper_ingot","default:cobble"},
+    }
+})
+minetest.log("action","Sieve: Shaker Motor Loaded")
+--Shaker Frame
+minetest.register_craftitem("sieve:shaker_frame", {
+    description = "Shaker Frame",
+    inventory_image = "sieve_shaker_frame.png",
+    })
+minetest.register_craft({
+    output = "sieve:shaker_frame 1",
+    recipe = {
+        {"", "sieve:shaker_motor",""},
+        {"sieve:shaker_motor", "default:furnace","sieve:shaker_motor"},
+        {"", "sieve:shaker_motor",""},
+    }
+})
+minetest.log("action","Sieve: Shaker Frame Loaded")
 --Hand Sieve
 minetest.register_node("sieve:hand_sieve", {
     description = "Hand Sieve",
@@ -57,6 +85,7 @@ minetest.register_node("sieve:hand_sieve", {
             },
         },
     on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+        --minetest.chat_send_all(itemstack:to_string())
         if itemstack:get_name() == 'default:sand' then
             itemstack:take_item()
             local chance = math.random(40)
@@ -186,7 +215,7 @@ minetest.register_craft({
     }
 })
 minetest.log("action","Sieve: Hand Sieve Loaded")
-----[[Auto Top
+--Auto Top
 minetest.register_craftitem("sieve:auto_sieve_top", {
     description = "Auto Sieve Top",
     inventory_image = "sieve_auto_top.png",
@@ -209,8 +238,8 @@ minetest.register_craft({
     }
 })
 minetest.log("action","Sieve: Auto Sieve Top Loaded")
---]]
-----[[Auto Legs
+
+--Auto Legs
 minetest.register_craftitem("sieve:auto_sieve_legs", {
     description = "Auto Sieve Legs",
     inventory_image = "sieve_auto_legs.png",
@@ -227,14 +256,12 @@ minetest.register_craftitem("sieve:auto_sieve_legs", {
 minetest.register_craft({
     output = "sieve:auto_sieve_legs",
     recipe = {
-        {"default:stone", "default:furnace", "default:stone"},
-        {"default:stone", "", "default:stone"},
-        {"default:stone", "", "default:stone"}
+        {"default:steel_ingot", "sieve:shaker_frame", "default:steel_ingot"},
+        {"default:steel_ingot", "", "default:steel_ingot"}
     }
 })
 minetest.log("action","Sieve: Auto Sieve Legs Loaded")
---]]
-----[[Auto Sieve
+--Auto Sieve
 minetest.register_node("sieve:auto_sieve", {
     description = "Auto Sieve",
     paramtype = "light",
@@ -252,9 +279,17 @@ minetest.register_node("sieve:auto_sieve", {
     node_box = {
         type = "fixed",
         fixed = {
-            {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}
-                }
-                }
+                {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5}, --top
+                {0.5,0.5,-0.5,-0.5,0,-0.4375},--top
+                {-0.5,0.5,-0.5,-0.4375,0,0.5},--top
+                {0.5,0.5,0.5,-0.5,0,0.4375},--top
+                {0.5,0.5,-0.5,0.4375,0,0.5},--top
+                {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375}, --leg
+                {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375}, --leg
+                {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375}, --leg
+                {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375}, --leg
+                },
+        },
 })
 minetest.register_craft({
     output = "sieve:auto_sieve",
@@ -264,5 +299,5 @@ minetest.register_craft({
     }
 })
 minetest.log("action","Sieve: Auto Sieve Loaded")
---]]
+
 minetest.log("action","Sieve: Finished Load")
