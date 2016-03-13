@@ -5,5 +5,11 @@ This mod is still in a non-working state, only the hand sieve works.
 Works:
   Hand Sieve
   Crafting items up to hand sieve
-Non-Functional
-  Everything else
+Partially-Functional
+  Auto Sieve --no fuel consumption, delay time, or repitition for more then one block of a material.
+  
+Acceptable Items to process:
+  "default:sand"
+  "default:gravel"
+  "default:desert_sand"
+  "default:dirt"
