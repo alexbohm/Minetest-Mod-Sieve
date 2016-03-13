@@ -1,45 +1,45 @@
 minetest.log("action","Sieve: Starting Load")
 --Created by Alex Bohm
 --[[
-Notes:
-
-MetaData Ref
-"burn_t" = total seconds of burn time on place and take
-"mat_n" = total number of material to process
-
-Auto Sieve is not functional yet (almost there).
+Acceptable Items:
+"default:sand"
+"default:gravel"
+"default:desert_sand"
+"default:dirt"
 ]]
-function con_mat(pos, stack)
+function con_mat(pos)
     local meta = minetest.get_meta(pos)
     local inv = meta:get_inventory()
-    if inv:contains_item("mat", stack) then
-        inv:remove_item("mat", ItemStack(stack:get_name().." 1"))
-        inv:add_item("out", ItemStack(material(stack:get_name())))
+    if not inv:is_empty("mat") and meta:get_string("burn") == "true" then
+        minetest.after(3, function(pos)
+            inv:remove_item("mat", ItemStack(inv:get_stack("mat", 1):get_name().." 1"))
+            inv:add_item("out", ItemStack(material(inv:get_stack("mat", 1):get_name())))
+            con_mat(pos)
+        end, pos)
     end
 end
-function con_fuel(pos, stack)
+function con_fuel(pos)
     local meta = minetest.get_meta(pos)
     local inv = meta:get_inventory()
-    if inv:contains_item("fuel", stack) then
-        inv:remove_item("fuel", ItemStack(stack:get_name().." 1"))
+    if not inv:is_empty("fuel") then
+        meta:set_string("burn", "true")
+    else
+        meta:set_string("burn", "false")
+    end
+    if not inv:is_empty("mat") and not inv:is_empty("fuel") then
+        minetest.after(minetest.get_craft_result({method="fuel",width=1,items={inv:get_stack("fuel", 1)}}).time, function(pos)
+            inv:remove_item("fuel", ItemStack(inv:get_stack("fuel", 1):get_name().." 1"))
+            con_fuel(pos)
+        end, pos)
     end
 end
-
 function accept(itemname)
     if itemname == 'default:sand' or itemname == 'default:gravel' or itemname == 'default:desert_sand' or itemname == 'default:dirt' then
         return true
     else
         return false
     end
-    --[[
-    Acceptable Items:
-    "default:sand"
-    "default:gravel"
-    "default:desert_sand"
-    "default:dirt"
-    ]]
 end
-
 function material(itemname)
     local chance = math.random(40)
         if accept(itemname) then
@@ -65,7 +65,7 @@ function material(itemname)
                 --mese crystal
                 r_str = 'default:mese_crystal 1'
             elseif chance == 20 then
-                --mese gem
+                --diamond
                 r_str = 'default:diamond 1'
             else
                 return nil
@@ -159,7 +159,6 @@ minetest.register_node("sieve:hand_sieve", {
             },
         },
     on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-        --minetest.chat_send_all(itemstack:to_string())
         if accept(itemstack:get_name()) then
             itemstack:take_item()
             minetest.item_drop(ItemStack(material(itemstack:get_name())), player, pos)
@@ -199,7 +198,6 @@ minetest.register_craft({
     }
 })
 minetest.log("action","Sieve: Auto Sieve Top Loaded")
-
 --Auto Legs
 minetest.register_craftitem("sieve:auto_sieve_legs", {
     description = "Auto Sieve Legs",
@@ -260,7 +258,6 @@ minetest.register_node("sieve:auto_sieve", {
         "list[context;out;3,0;5,4;]"..
         "image[0,1;2,2;sieve_auto_sieve_side.png]"..
         "list[current_player;main;0,5;8,4;]")
-        meta:set_int("burn_t", 0)
         local inv = meta:get_inventory()
         inv:set_size("mat", 1*1)
         inv:set_size("fuel", 1*1)
@@ -289,21 +286,14 @@ minetest.register_node("sieve:auto_sieve", {
     on_metadata_inventory_put = function(pos, listname, index, stack, player)
         local meta = minetest.get_meta(pos)
         local inv = meta:get_inventory()
-        if listname == "fuel" then
-            meta:set_int("burn_t", inv:get_stack("fuel", 1):get_count()*minetest.get_craft_result({method="fuel",width=1,items={stack}}).time)
-        elseif listname == "mat" then
-            meta:set_int("mat_n", inv:get_stack("mat_n", 1):get_count())
-            con_mat(pos, stack)
+        if inv:get_stack("fuel", 1):get_count() > 0 and inv:get_stack("mat", 1):get_count() > 0 and (inv:get_stack("fuel", 1):get_count() == stack:get_count() or inv:get_stack("mat", 1):get_count() == stack:get_count())then
+            con_fuel(pos)
+            con_mat(pos)
         end
     end,
     on_metadata_inventory_take = function(pos, listname, index, stack, player)
         local meta = minetest.get_meta(pos)
         local inv = meta:get_inventory()
-        if listname == "fuel" then
-            meta:set_int("burn_t", inv:get_stack("fuel", 1):get_count()*minetest.get_craft_result({method="fuel",width=1,items={stack}}).time)
-        elseif listname == "mat" then
-            meta:set_int("mat_n", inv:get_stack("mat_n", 1):get_count())
-        end
     end,
     on_destruct = function(pos)
         local meta = minetest.get_meta(pos)
