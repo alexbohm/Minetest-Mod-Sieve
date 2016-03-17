@@ -6,10 +6,10 @@ Acceptable Items:
 "default:desert_sand"
 "default:dirt"
 ]]
-local path = minetest.get_modpath("sieve")
+minetest.log("action","[mod] Sieve: Starting Load")
 
 dofile(path.."/Craft_Items.lua")
 dofile(path.."/Craft_Recipes.lua")
 dofile(path.."/Nodes.lua")
 
-minetest.log("action","Sieve: Finished Load")
+minetest.log("action","[mod] Sieve: Finished Load")
