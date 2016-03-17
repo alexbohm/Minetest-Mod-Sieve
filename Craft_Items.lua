@@ -18,3 +18,13 @@ minetest.register_craftitem("sieve:shaker_frame", {
     description = "Shaker Frame",
     inventory_image = "sieve_shaker_frame.png",
     })
+--Auto Top
+minetest.register_craftitem("sieve:auto_sieve_top", {
+    description = "Auto Sieve Top",
+    inventory_image = "sieve_auto_top.png",
+})
+--Auto Legs
+minetest.register_craftitem("sieve:auto_sieve_legs", {
+    description = "Auto Sieve Legs",
+    inventory_image = "sieve_auto_legs.png",
+})

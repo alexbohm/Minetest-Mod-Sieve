@@ -115,37 +115,6 @@ minetest.register_node("sieve:hand_sieve", {
             end
     end,
 })
-
---Auto Top
-minetest.register_craftitem("sieve:auto_sieve_top", {
-    description = "Auto Sieve Top",
-    inventory_image = "sieve_auto_top.png",
-    is_ground_content = true,
-    groups = {oddly_breakable_by_hand=1},
-    drawtype = "nodebox",
-    node_box = {
-        type = "fixed",
-        fixed = {
-            {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}
-                }
-                }
-})
-
---Auto Legs
-minetest.register_craftitem("sieve:auto_sieve_legs", {
-    description = "Auto Sieve Legs",
-    inventory_image = "sieve_auto_legs.png",
-    is_ground_content = true,
-    groups = {oddly_breakable_by_hand=1},
-    drawtype = "nodebox",
-    node_box = {
-        type = "fixed",
-        fixed = {
-            {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}
-                }
-                }
-})
-
 --Auto Sieve
 minetest.register_node("sieve:auto_sieve", {
     description = "Auto Sieve",
