@@ -1,72 +1,71 @@
-function con_mat(pos)
-    local meta = minetest.get_meta(pos)
-    local inv = meta:get_inventory()
-    if not inv:is_empty("mat") and meta:get_string("burn") == "true" then
-        minetest.after(3, function(pos)
-            inv:remove_item("mat", ItemStack(inv:get_stack("mat", 1):get_name().." 1"))
-            inv:add_item("out", ItemStack(material(inv:get_stack("mat", 1):get_name())))
-            con_mat(pos)
-        end, pos)
-    end
-end
-function con_fuel(pos)
-    local meta = minetest.get_meta(pos)
-    local inv = meta:get_inventory()
-    if not inv:is_empty("fuel") then
-        meta:set_string("burn", "true")
-    else
-        meta:set_string("burn", "false")
-    end
-    if not inv:is_empty("mat") and not inv:is_empty("fuel") then
-        minetest.after(minetest.get_craft_result({method="fuel",width=1,items={inv:get_stack("fuel", 1)}}).time, function(pos)
-            inv:remove_item("fuel", ItemStack(inv:get_stack("fuel", 1):get_name().." 1"))
-            con_fuel(pos)
-        end, pos)
-    end
-end
-function accept(itemname)
-    if itemname == 'default:sand' or itemname == 'default:gravel' or itemname == 'default:desert_sand' or itemname == 'default:dirt' then
-        return true
-    else
-        return false
-    end
-end
-function material(itemname)
-    local chance = math.random(40)
-        if accept(itemname) then
-            if chance <= 5 then
-                --stick
-                r_str = 'default:stick 1'
-            elseif chance <= 10 and chance < 12 then
-                --coal
-                r_str = 'default:coal_lump 1'
-            elseif chance <= 12 and chance < 14 then
-                --gold
-                r_str = 'default:gold_lump 1'
-            elseif chance <= 14 and chance < 16 then
-                --copper
-                r_str = 'default:copper_lump 1'
-            elseif chance <= 16 and chance < 18 then
-                --iron
-                r_str = 'default:iron_lump 1'
-            elseif chance <= 18 and chance < 19 then 
-                --mese fragment
-                r_str = 'default:mese_crystal_fragment 1'
-            elseif chance <= 19 and chance < 20 then
-                --mese crystal
-                r_str = 'default:mese_crystal 1'
-            elseif chance == 20 then
-                --diamond
-                r_str = 'default:diamond 1'
-            else
-                return nil
-            end
-            return r_str
-        else
-            return nil
+local function accept(stack)
+    for _,v in pairs( --these are the items that are accepted as src material
+        {'default:sand','default:gravel','default:desert_sand','default:dirt'})
+    do
+        if stack:get_name() == v then
+            return true
         end
+    end
+    return false
 end
---Hand Sieve
+local function updateformspec(time) 
+    local formspec = "size[8,9;]"..
+    "list[context;src;0,0;1,1;]"..
+    "list[context;fuel;0,3;1,1;]"..
+    "list[context;dst;3,0;5,4;]"..
+    "image[0,1;2,2;sieve_auto_sieve_side.png]"..
+    "list[current_player;main;0,5;8,4;]"
+    if time>=36 then --will rewrite this to be shorter, like the material function
+        formspec=formspec.."image[2,1;1,3;sieve_fuel36.png]"
+    elseif time>=33 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel33.png]"
+    elseif time>=30 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel30.png]"
+    elseif time>=27 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel27.png]"
+    elseif time>=24 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel24.png]"
+    elseif time>=21 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel21.png]"
+    elseif time>=18 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel18.png]"
+    elseif time>=15 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel15.png]"
+    elseif time>=12 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel12.png]"
+    elseif time>=9 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel9.png]"
+    elseif time>=6 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel6.png]"
+    elseif time>=3 then
+        formspec=formspec.."image[2,1;1,3;sieve_fuel3.png]"
+    else 
+        formspec=formspec.."image[2,1;1,3;sieve_fuel0.png]"
+    end
+    return formspec
+end
+local percent = { --used to define what chance an item has to give material
+--{"itemstack string", exclusive top cuttoff}
+--put the list in order from small to large cuttoffs (like the original list)
+    {"default:diamond 1", 2},
+    {"default:mese_crystal 1", 4},
+    {"default:mese_crystal_fragment 1", 8},
+    {"default:iron_lump 1", 15},
+    {"default:copper_lump 1", 25},
+    {"default:gold_lump 1", 35},
+    {"default:coal_lump 1", 40},
+    {"default:stick 1", 50}
+}
+function material()
+    local chance = math.random(100)
+    for _,v in pairs(percent) do
+        if chance<v[2] then
+            return ItemStack(v[1])
+        end
+    end
+    return nil
+end
+
 minetest.register_node("sieve:hand_sieve", {
     description = "Hand Sieve",
     paramtype = "light",
@@ -83,39 +82,29 @@ minetest.register_node("sieve:hand_sieve", {
     node_box = {
         type = "fixed",
         fixed = {
-                {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5}, --top
-                {0.5,0.1875,0.5,-0.5,0.5,0.4375},--top
-                {-0.5,0.1875,0.5,-0.4375,0.5,-0.5}, --top
-                {0.5,0.1875,-0.5,-0.5,0.5,-0.4375}, --top
-                {0.5,0.1875,0.5,0.4375,0.5,-0.5}, --top
-                {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375}, --leg
-                {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375}, --leg
-                {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375}, --leg
-                {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375}, --leg
-            },
+            {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5}, --top
+            {0.5,0.1875,0.5,-0.5,0.5,0.4375},--top
+            {-0.5,0.1875,0.5,-0.4375,0.5,-0.5}, --top
+            {0.5,0.1875,-0.5,-0.5,0.5,-0.4375}, --top
+            {0.5,0.1875,0.5,0.4375,0.5,-0.5}, --top
+            {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375}, --leg
+            {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375}, --leg
+            {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375}, --leg
+            {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375}, --leg
         },
-    on_construct = function(pos)
-        local meta = minetest.get_meta(pos)
-        meta:set_int("delay", 5)
-        meta:set_string("infotext", ""..((meta:get_int("delay")/5)*100).."% Left")
-    end,
+    },
     on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-        local meta = minetest.get_meta(pos)
-            if accept(itemstack:get_name()) and meta:get_int("delay") == 5 then
-                meta:set_string("item", itemstack:get_name())
-                itemstack:take_item(1)
-            end
-            if (accept(itemstack:get_name()) or itemstack:is_empty()) and meta:get_int("delay") < 1 then
-                minetest.item_drop(ItemStack(material(meta:get_string("item"))), player, pos)
-                meta:set_int("delay", 5)
-                meta:set_string("infotext", ""..((meta:get_int("delay")/5)*100).."% Left")
-            elseif (accept(itemstack:get_name()) or itemstack:is_empty()) then
-                meta:set_int("delay", meta:get_int("delay")-1)
-                meta:set_string("infotext", ""..((meta:get_int("delay")/5)*100).."% Left")
-            end
+        local timer = minetest.get_node_timer(pos)
+        if accept(itemstack) and not timer:is_started() then
+            itemstack:take_item(1)
+            timer:start(3)
+            minetest.add_item(pos, material())
+            return itemstack
+        else
+            return nil
+        end
     end,
 })
---Auto Sieve
 minetest.register_node("sieve:auto_sieve", {
     description = "Auto Sieve",
     paramtype = "light",
@@ -128,36 +117,83 @@ minetest.register_node("sieve:auto_sieve", {
         "sieve_auto_sieve_side.png"
     },
     is_ground_content = true,
-    groups = {oddly_breakable_by_hand=1},
+    groups = {choppy = 2, oddly_breakable_by_hand = 2, tubedevice = 1, tubedevice_receiver = 1},
     drawtype = "nodebox",
     node_box = {
         type = "fixed",
         fixed = {
-                {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5}, --top
-                {0.5,0.5,-0.5,-0.5,0,-0.4375},--top
-                {-0.5,0.5,-0.5,-0.4375,0,0.5},--top
-                {0.5,0.5,0.5,-0.5,0,0.4375},--top
-                {0.5,0.5,-0.5,0.4375,0,0.5},--top
-                {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375}, --leg
-                {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375}, --leg
-                {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375}, --leg
-                {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375}, --leg
+                {-0.5, 0.1875, -0.5, 0.5, 0.19, 0.5},
+                {0.5,0.5,-0.5,-0.5,0,-0.4375},
+                {-0.5,0.5,-0.5,-0.4375,0,0.5},
+                {0.5,0.5,0.5,-0.5,0,0.4375},
+                {0.5,0.5,-0.5,0.4375,0,0.5},
+                {-0.5, -0.5, -0.5, -0.4375, 0.5, -0.4375},
+                {-0.5, -0.5, 0.5, -0.4375, 0.5, 0.4375},
+                {0.5, -0.5, 0.5, 0.4375, 0.5, 0.4375},
+                {0.5, -0.5, -0.5, 0.4375, 0.5, -0.4375},
                 },
         },
+
     on_construct = function(pos)
         local meta = minetest.get_meta(pos)
         meta:set_string("formspec",
         "size[8,9;]"..
-        "list[context;mat;0,0;1,1;]"..
+        "list[context;src;0,0;1,1;]"..
         "list[context;fuel;0,3;1,1;]"..
-        "list[context;out;3,0;5,4;]"..
+        "list[context;dst;3,0;5,4;]"..
         "image[0,1;2,2;sieve_auto_sieve_side.png]"..
+        "image[2,1;1,3;sieve_fuel0.png]"..
         "list[current_player;main;0,5;8,4;]")
         local inv = meta:get_inventory()
-        inv:set_size("mat", 1*1)
+        inv:set_size("src", 1*1)
         inv:set_size("fuel", 1*1)
-        inv:set_size("out", 5*4) 
+        inv:set_size("dst", 5*4)
+        meta:set_int("fueltime", 0)
     end,
+
+    on_destruct = function(pos)
+        local meta = minetest.get_meta(pos)
+        local inv = meta:get_inventory()
+        for i, item in ipairs(inv:get_list("dst")) do
+            minetest.add_item(pos, item)
+        end
+        minetest.add_item(pos, inv:get_stack("src", 1))
+        minetest.add_item(pos, inv:get_stack("fuel", 1))
+        minetest.get_node_timer(pos):stop()
+    end,
+    --Pipeworks Insertion-------------------------------------------------
+    tube = {
+        insert_object = function(pos, node, stack, direction)
+            local meta = minetest.get_meta(pos)
+            local inv = meta:get_inventory()
+            local timer = minetest.get_node_timer(pos)
+            local left
+            if direction.y==-1 then
+                left = inv:add_item("src", stack)
+            else
+                left = inv:add_item("fuel", stack)
+            end
+
+            if not timer:is_started() and inv:get_stack("fuel",1):get_count()>0 and inv:get_stack("src",1):get_count()>0 then
+                timer:start(3)
+            end
+            return left
+        end,
+        can_insert = function(pos, node, stack, direction)
+            local meta = minetest.get_meta(pos)
+            local inv = meta:get_inventory()
+            if direction.y==-1 then
+                return accept(stack) and inv:room_for_item("src", stack)
+            else
+                return minetest.get_craft_result({method="fuel",width=1,items={stack}}).time > 0 and inv:room_for_item("fuel", stack)
+            end
+        end,
+        connect_sides = {left= 1, right= 1, back= 1, front= 1, bottom= 1, top= 1}
+    },
+    input_inventory = "dst",
+    after_place_node = pipeworks.after_place,
+    after_dig_node = pipeworks.after_dig,
+    --Manual Insertion-------------------------------------------------
     allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
         return 0
     end,
@@ -168,36 +204,49 @@ minetest.register_node("sieve:auto_sieve", {
             else
                 return 0
             end
-        elseif listname == 'mat' then
-            if accept(stack:get_name()) then
+        elseif listname == 'src' then
+            if accept(stack) then
                 return stack:get_count()
             else
                 return 0
             end
-        elseif listname == 'out' then
-            return 0
+        elseif listname == 'dst' then
+            return stack:get_count()
+        else
+            return 0;
         end
     end,
     on_metadata_inventory_put = function(pos, listname, index, stack, player)
-        local meta = minetest.get_meta(pos)
-        local inv = meta:get_inventory()
-        if inv:get_stack("fuel", 1):get_count() > 0 and inv:get_stack("mat", 1):get_count() > 0 and (inv:get_stack("fuel", 1):get_count() == stack:get_count() or inv:get_stack("mat", 1):get_count() == stack:get_count())then
-            con_fuel(pos)
-            con_mat(pos)
+        if listname ~= "dst" then
+            local meta = minetest.get_meta(pos)
+            local inv = meta:get_inventory()
+            local timer = minetest.get_node_timer(pos)
+            if not timer:is_started() and inv:get_stack("fuel",1):get_count()>0 and inv:get_stack("src",1):get_count()>0 then
+                timer:start(3)
+            end
         end
     end,
-    on_metadata_inventory_take = function(pos, listname, index, stack, player)
+    on_timer = function(pos, formname, fields, sender)
         local meta = minetest.get_meta(pos)
         local inv = meta:get_inventory()
-    end,
-    on_destruct = function(pos)
-        local meta = minetest.get_meta(pos)
-        local inv = meta:get_inventory()
-    for i, item in ipairs(inv:get_list("out")) do
-        minetest.add_item(pos, item)
-    end
-    minetest.add_item(pos, inv:get_stack("mat", 1))
-    minetest.add_item(pos, inv:get_stack("fuel", 1))
-    end,
+        local timer = minetest.get_node_timer(pos)
+        if inv:get_stack("src",1):get_count()>0 and meta:get_int("fueltime")>=3 then
+            inv:remove_item("src", inv:get_stack("src",1):take_item(1))
+            local reward = material()
+            if inv:room_for_item("dst", reward) then
+                inv:add_item("dst", reward)
+            end
+        end
+        meta:set_int("fueltime", meta:get_int("fueltime")-3)
 
+        if inv:get_stack("fuel", 1):get_count()>0 and inv:get_stack("src",1):get_count()>0 and meta:get_int("fueltime")<3 then
+            meta:set_int("fueltime", minetest.get_craft_result({method="fuel",width=1,items={inv:get_stack("fuel",1)}}).time)
+            inv:remove_item("fuel", inv:get_stack("fuel",1):take_item(1))
+        end
+        meta:set_string("formspec", updateformspec(meta:get_int("fueltime")))
+        return meta:get_int("fueltime")>=3
+    end,
+    allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+        return stack:get_count()
+    end,
 })
