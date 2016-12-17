@@ -1,7 +1,9 @@
 # Minetest-Mod-Sieve
 This is a simple mod for the open source game "Minetest".
 Feel free to use/add your own textures (I used 32x32).
-This mod is a work in progress, all blocks work with some bugs.
+This mod is a work in progress
+Depends:
+	pipeworks
 
 Acceptable Items to process:
   "default:sand"
