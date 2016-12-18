@@ -11,7 +11,10 @@ Acceptable Items to process:
   "default:desert_sand"
   "default:dirt"
 
+
 Crafting:
+I recomend that one uses the Craft Guide mod
+https://forum.minetest.net/viewtopic.php?t=2334
 	Cloth Fiber:
 		X= default:leaves  O= default:wood
 		X   X
