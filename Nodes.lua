@@ -9,44 +9,18 @@ local function accept(stack)
     return false
 end
 local function updateformspec(time) 
-    local formspec = "size[8,9;]"..
-    "list[context;src;0,0;1,1;]"..
-    "list[context;fuel;0,3;1,1;]"..
-    "list[context;dst;3,0;5,4;]"..
-    "image[0,1;2,2;sieve_auto_sieve_side.png]"..
-    "list[current_player;main;0,5;8,4;]"
-    if time>=36 then --will rewrite this to be shorter, like the material function
-        formspec=formspec.."image[2,1;1,3;sieve_fuel36.png]"
-    elseif time>=33 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel33.png]"
-    elseif time>=30 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel30.png]"
-    elseif time>=27 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel27.png]"
-    elseif time>=24 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel24.png]"
-    elseif time>=21 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel21.png]"
-    elseif time>=18 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel18.png]"
-    elseif time>=15 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel15.png]"
-    elseif time>=12 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel12.png]"
-    elseif time>=9 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel9.png]"
-    elseif time>=6 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel6.png]"
-    elseif time>=3 then
-        formspec=formspec.."image[2,1;1,3;sieve_fuel3.png]"
-    else 
-        formspec=formspec.."image[2,1;1,3;sieve_fuel0.png]"
+    local formspec = "size[8,9;]list[context;src;0,0;1,1;]list[context;fuel;0,3;1,1;]list[context;dst;3,0;5,4;]image[0,1;2,2;sieve_auto_sieve_side.png]list[current_player;main;0,5;8,4;]"
+    local imgs = {36,33,30,27,24,21,18,15,12,9,6,3}
+    for _,v in pairs(imgs) do
+        if time>=v then 
+            return formspec.."image[2,1;1,3;sieve_fuel"..v..".png]"
+        end
     end
-    return formspec
+    return formspec.."image[2,1;1,3;sieve_fuel0.png]"
 end
 local percent = { --used to define what chance an item has to give material
 --{"itemstack string", exclusive top cuttoff}
---put the list in order from small to large cuttoffs (like the original list)
+--put the list in order from small to large cutoffs (like the original list)
     {"default:diamond 1", 2},
     {"default:mese_crystal 1", 4},
     {"default:mese_crystal_fragment 1", 8},
@@ -57,7 +31,7 @@ local percent = { --used to define what chance an item has to give material
     {"default:stick 1", 50}
 }
 function material()
-    local chance = math.random(100)
+    local chance = math.random(200)
     for _,v in pairs(percent) do
         if chance<v[2] then
             return ItemStack(v[1])
