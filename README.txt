@@ -13,7 +13,7 @@ Acceptable Items to process:
 
 
 Crafting:
-I recomend that one uses the Craft Guide mod
+I recommend that one uses the Craft Guide mod
 https://forum.minetest.net/viewtopic.php?t=2334
 	Cloth Fiber:
 		X= default:leaves  O= default:wood
